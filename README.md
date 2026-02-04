@@ -2,7 +2,7 @@ Ethan Nagooroo 386004980
 Ahmed Shabana 772003600
 Abderrahmane Hamidi 767000039
 Hassan Al hasani - 784003677
-
+Faisal AlAhmad 745003693
 
 Product Vision Statement:
 
