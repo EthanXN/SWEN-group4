@@ -1,16 +1,22 @@
 # API Endpoints — Food & Beverage Ordering System
 
-Base: `/api`
-Auth: JWT Bearer token in `Authorization: Bearer <token>`
+Base: `http://localhost:8080`
+Auth: Session-based (HTTP session cookies), send `credentials: 'include'` with every request
 
 ## Authentication & Authorization
 - POST `/auth/register`
-  - Body: { username, email, password, role }  // role = HELPER or OWNER
-  - Returns: 201 Created
+  - Body: { username, password }
+  - Returns: 201 { message: "Registration successful" }
 
 - POST `/auth/login`
-  - Body: { usernameOrEmail, password }
-  - Returns: 200 OK { token, expiresInSeconds, role }
+  - Body: { username, password }
+  - Returns: 200 { username, role, message: "Login successful" }
+
+- POST `/auth/logout`
+  - Returns: 200 { message: "Logout successful" }
+
+- GET `/auth/status`
+  - Returns: 200 { username, role } or 401 if not logged in
 
 ## Helper: Catalog Browsing
 - GET `/items`
@@ -64,5 +70,5 @@ Auth: JWT Bearer token in `Authorization: Bearer <token>`
 
 ## Access Control Rules
 - Guest: only `/auth/**`
-- Helper: allowed `/items/**`, `/basket/**`, `/orders/**`; forbidden `/admin/**` (403)
-- Owner: allowed `/admin/**`, `/items/**`; forbidden `/basket/**`, `/orders/**` (403)
+- Helper: allowed `/items/**`, `/collection/**`; forbidden if not logged in (401)
+- Owner: allowed `/items/**` (POST/PUT/DELETE); forbidden `/collection/**` (403)
