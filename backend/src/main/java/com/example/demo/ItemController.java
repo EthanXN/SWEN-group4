@@ -18,7 +18,6 @@ public class ItemController {
         this.itemRepo = itemRepo;
     }
 
-    // GET all items (both Owner and Helper can access)
     @GetMapping
     public ResponseEntity<?> getAllItems(HttpSession session) {
         if (!isLoggedIn(session)) {
@@ -28,7 +27,17 @@ public class ItemController {
         return ResponseEntity.ok(itemRepo.findAll());
     }
 
-    // Search items by name (both Owner and Helper can access)
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getItemById(@PathVariable Long id, HttpSession session) {
+        if (!isLoggedIn(session)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Not logged in"));
+        }
+        return itemRepo.findById(id)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/search")
     public ResponseEntity<?> searchItems(@RequestParam String query, HttpSession session) {
         if (!isLoggedIn(session)) {
@@ -39,7 +48,6 @@ public class ItemController {
         return ResponseEntity.ok(results);
     }
 
-    // POST new item (OWNER ONLY)
     @PostMapping
     public ResponseEntity<?> addItem(@RequestBody Item item, HttpSession session) {
         if (!isOwner(session)) {
@@ -50,7 +58,6 @@ public class ItemController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // PUT update item (OWNER ONLY)
     @PutMapping("/{id}")
     public ResponseEntity<?> updateItem(@PathVariable Long id, @RequestBody Item item, HttpSession session) {
         if (!isOwner(session)) {
@@ -61,6 +68,10 @@ public class ItemController {
         return itemRepo.findById(id)
                 .map(existingItem -> {
                     existingItem.setName(item.getName());
+                    existingItem.setDescription(item.getDescription());
+                    existingItem.setPrice(item.getPrice());
+                    existingItem.setAvailable(item.isAvailable());
+                    existingItem.setCategory(item.getCategory());
                     Item updated = itemRepo.save(existingItem);
                     return ResponseEntity.ok(updated);
                 })

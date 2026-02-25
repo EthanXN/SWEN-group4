@@ -18,25 +18,48 @@ public class AuthController {
         this.userRepo = userRepo;
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpSession session) {
-        // Determine role based on username
-        User.Role role = request.getUsername().equals("admin") ? User.Role.OWNER : User.Role.HELPER;
-
-        // Find or create user
-        User user = userRepo.findByUsername(request.getUsername())
-                .orElseGet(() -> {
-                    User newUser = new User(request.getUsername(), request.getPassword(), role);
-                    return userRepo.save(newUser);
-                });
-
-        // Check password
-        if (!user.getPassword().equals(request.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Invalid credentials"));
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody LoginRequest request) {
+        if (request.getUsername() == null || request.getUsername().isBlank()
+                || request.getPassword() == null || request.getPassword().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Username and password are required"));
         }
 
-        // Store user in session
+        if (userRepo.findByUsername(request.getUsername()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Username already taken"));
+        }
+
+        User.Role role = (request.getUsername().equals("admin") || request.getUsername().equals("dev"))
+                ? User.Role.OWNER : User.Role.HELPER;
+
+        User newUser = new User(request.getUsername(), request.getPassword(), role);
+        userRepo.save(newUser);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("message", "Registration successful"));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpSession session) {
+        if (request.getUsername() == null || request.getUsername().isBlank()
+                || request.getPassword() == null || request.getPassword().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Username and password are required"));
+        }
+
+        User user = userRepo.findByUsername(request.getUsername()).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid username or password"));
+        }
+
+        if (user.getPassword() == null || !user.getPassword().equals(request.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid username or password"));
+        }
+
         session.setAttribute("userId", user.getId());
         session.setAttribute("username", user.getUsername());
         session.setAttribute("role", user.getRole());
