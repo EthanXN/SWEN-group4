@@ -22,7 +22,7 @@
 |------|------------|
 | **Spring Boot** | The Java-based backend framework used to build the REST API and handle business logic. |
 | **MariaDB** | The relational database used to store users, catalog items, baskets, and orders.
-| **Angular** | The TypeScript-based frontend framework used to build the user interface. |
+| **React** | The TypeScript-based frontend framework used to build the user interface. |
 | **REST API** | A set of HTTP endpoints that allow the Angular frontend to communicate with the Spring Boot backend. |
 | **Controller** | A Spring Boot class annotated with `@RestController` that handles incoming HTTP requests and returns responses. |
 | **Service** | A Spring Boot class annotated with `@Service` that contains the business logic of the application. |
@@ -52,4 +52,5 @@
 | **NFR** | Non-Functional Requirement |
 | **UI** | User Interface |
 | **URL** | Uniform Resource Locator |
+
 | **US** | User Story |
