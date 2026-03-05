@@ -19,7 +19,7 @@
 ### Sprint 1 Details:
 **Sprint Goal:** Implement secure authentication, role-based access control, and catalog browsing
 
-**Stories Completed: **
+**Stories Completed:**
   
   US-AUTH-01 (Role-Based Access): Crucial for showing Owner vs. Helper logic.
   
@@ -47,6 +47,7 @@
 - **Trello Board:** https://trello.com/b/5a4Ws4pV/phase-1
 - **Functional Requirements:**https://docs.google.com/document/d/1j2Tffo4wU7_lir36_b0EBkcToOFHgi3oqU_lQTD63vc/edit?usp=sharing
 - **Traceability Matrix:** https://docs.google.com/spreadsheets/d/1TgXDOXwDY5_ZRXY7AxYGBweRmCqr-XER9K5d6YUTLHs/edit?usp=sharing
+
 
 
 
