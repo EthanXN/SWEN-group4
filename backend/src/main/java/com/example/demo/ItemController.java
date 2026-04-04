@@ -13,11 +13,11 @@ import java.util.Map;
 public class ItemController {
 
     private final ItemRepository itemRepo;
-@Autowired
-    private ItemService itemService;
+    private final ItemService itemService;
 
-    public ItemController(ItemRepository itemRepo) {
+    public ItemController(ItemRepository itemRepo, ItemService itemService) {
         this.itemRepo = itemRepo;
+        this.itemService = itemService;
     }
 
     @GetMapping
@@ -66,7 +66,6 @@ public class ItemController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Only Owner can update items"));
         }
-
         return itemRepo.findById(id)
                 .map(existingItem -> {
                     existingItem.setName(item.getName());
@@ -80,23 +79,29 @@ public class ItemController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // DELETE item (OWNER ONLY)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteItem(@PathVariable Long id, HttpSession session) {
         if (!isOwner(session)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Only Owner can delete items"));
         }
-
         if (!itemRepo.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-
         itemRepo.deleteById(id);
         return ResponseEntity.ok(Map.of("message", "Item deleted successfully"));
     }
 
-    // Helper methods for role checking
+    @GetMapping("/service/search")
+    public ResponseEntity<?> serviceSearchByName(@RequestParam String name) {
+        return ResponseEntity.ok(itemService.searchByName(name));
+    }
+
+    @GetMapping("/service/category")
+    public ResponseEntity<?> serviceSearchByCategory(@RequestParam String category) {
+        return ResponseEntity.ok(itemService.searchByCategory(category));
+    }
+
     private boolean isLoggedIn(HttpSession session) {
         return session.getAttribute("userId") != null;
     }
@@ -105,13 +110,4 @@ public class ItemController {
         User.Role role = (User.Role) session.getAttribute("role");
         return role == User.Role.OWNER;
     }
-@GetMapping("/service/search")
-public ResponseEntity<?> serviceSearchByName(@RequestParam String name) {
-    return ResponseEntity.ok(itemService.searchByName(name));
-}
-
-@GetMapping("/service/category")
-public ResponseEntity<?> serviceSearchByCategory(@RequestParam String category) {
-    return ResponseEntity.ok(itemService.searchByCategory(category));
-}
 }
