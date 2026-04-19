@@ -13,15 +13,6 @@ export default function Home() {
 
   return (
     <div className="home-page">
-      <div style={{ marginBottom: "30px" }}>
-  <h2>Quick Navigation (Assignment)</h2>
-  <ul>
-    <li><a href="http://localhost:8080/items">Items</a></li>
-    <li><a href="http://localhost:8080/users">Users</a></li>
-    <li><a href="http://localhost:8080/categories">Categories</a></li>
-    <li><a href="http://localhost:8080/collection">Collection</a></li>
-  </ul>
-</div>
       <section className="hero">
         <div className="hero-content">
           <h1>Fresh Food,<br />Delivered Fast</h1>
