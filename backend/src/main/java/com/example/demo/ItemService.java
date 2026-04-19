@@ -24,32 +24,38 @@ public class ItemService {
         items.add(new Item("French Fries", "Crispy golden fries", 25.0, "Sides"));
     }
 
+    // Save a new item
     public Item save(Item item) {
         items.add(item);
         return item;
     }
 
+    // Search by Name (case-insensitive)
     public List<Item> searchByName(String name) {
         return items.stream()
                 .filter(i -> i.getName().toLowerCase().contains(name.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
+    // Search by Category (case-insensitive)
     public List<Item> searchByCategory(String category) {
         return items.stream()
                 .filter(i -> i.getCategory().equalsIgnoreCase(category))
                 .collect(Collectors.toList());
     }
 
+    // Add item to user collection
     public List<Item> addToCollection(Item item) {
         collection.add(item);
         return collection;
     }
 
+    // Get all items
     public List<Item> getAllItems() {
         return items;
     }
 
+    // Get collection
     public List<Item> getCollection() {
         return collection;
     }

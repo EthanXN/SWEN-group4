@@ -57,9 +57,14 @@ export default function AdminDashboard() {
           <h1>Admin Dashboard</h1>
           <p>{items.length} item{items.length !== 1 ? 's' : ''} in catalog</p>
         </div>
-        <Link to="/admin/items/new" className="btn btn-primary">
-          + Add Item
-        </Link>
+        <div className="admin-header-actions">
+          <Link to="/admin/users" className="btn btn-outline">
+            Manage Users
+          </Link>
+          <Link to="/admin/items/new" className="btn btn-primary">
+            + Add Item
+          </Link>
+        </div>
       </div>
 
       {loading ? (

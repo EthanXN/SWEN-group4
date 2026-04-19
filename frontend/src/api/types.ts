@@ -7,6 +7,13 @@ export interface Item {
   category: string | null;
 }
 
+export interface User {
+  id: number;
+  username: string;
+  role: 'OWNER' | 'HELPER';
+  collection: number[];
+}
+
 export interface LoginRequest {
   username: string;
   password: string;

@@ -14,6 +14,8 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminUsers from './pages/AdminUsers';
+import AdminUserForm from './pages/AdminUserForm';
 import AdminItemForm from './pages/AdminItemForm';
 import NotFound from './pages/NotFound';
 import Unauthorized from './pages/Unauthorized';
@@ -43,6 +45,9 @@ export default function App() {
 
                 {/* Owner only */}
                 <Route path="/admin" element={<ProtectedRoute requiredRole="OWNER"><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/users" element={<ProtectedRoute requiredRole="OWNER"><AdminUsers /></ProtectedRoute>} />
+                <Route path="/admin/users/new" element={<ProtectedRoute requiredRole="OWNER"><AdminUserForm /></ProtectedRoute>} />
+                <Route path="/admin/users/:id/edit" element={<ProtectedRoute requiredRole="OWNER"><AdminUserForm /></ProtectedRoute>} />
                 <Route path="/admin/items/new" element={<ProtectedRoute requiredRole="OWNER"><AdminItemForm /></ProtectedRoute>} />
                 <Route path="/admin/items/:id/edit" element={<ProtectedRoute requiredRole="OWNER"><AdminItemForm /></ProtectedRoute>} />
 

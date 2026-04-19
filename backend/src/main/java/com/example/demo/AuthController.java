@@ -9,13 +9,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class AuthController {
 
-    private final UserRepository userRepo;
+    private final UserService userService;
 
-    public AuthController(UserRepository userRepo) {
-        this.userRepo = userRepo;
+    public AuthController(UserService userService) {
+        this.userService = userService;
     }
 
     @PostMapping("/register")
@@ -26,7 +25,7 @@ public class AuthController {
                     .body(Map.of("error", "Username and password are required"));
         }
 
-        if (userRepo.findByUsername(request.getUsername()).isPresent()) {
+        if (userService.existsByUsername(request.getUsername())) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "Username already taken"));
         }
@@ -35,7 +34,7 @@ public class AuthController {
                 ? User.Role.OWNER : User.Role.HELPER;
 
         User newUser = new User(request.getUsername(), request.getPassword(), role);
-        userRepo.save(newUser);
+        userService.saveUser(newUser);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("message", "Registration successful"));
     }
@@ -48,7 +47,7 @@ public class AuthController {
                     .body(Map.of("error", "Username and password are required"));
         }
 
-        User user = userRepo.findByUsername(request.getUsername()).orElse(null);
+        User user = userService.findByUsername(request.getUsername()).orElse(null);
 
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

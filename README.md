@@ -1,4 +1,4 @@
-# Assignment 2
+# Assignment 1
 
 ## Team Members
 - Ethan Nagooroo (ID: 386004980)
@@ -7,7 +7,7 @@
 - Hassan Al Hasani (ID: 784003677)
 - Faisal AlAhmad (ID: 745003693)
 
-## Assignment 2 Progress
+## Assignment 1 Progress
 
 ### Completed:
 - [x] Domain Analysis & Class Diagram
@@ -16,7 +16,7 @@
 - [x] Traceability Matrix
 - [x] User Stories Definition (Total: 10 stories)
 
-### Sprint 2 Details:
+### Sprint 1 Details:
 **Sprint Goal:** Implement secure authentication, role-based access control, and catalog browsing
 
 **Stories Completed:**
