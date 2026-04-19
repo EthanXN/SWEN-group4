@@ -3,119 +3,106 @@ package com.example.demo;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpSession;
+
 import java.util.List;
 import java.util.Map;
 
-@RestController
-@RequestMapping("/collection")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
+@RestController // Marks this class as a REST API controller
+@RequestMapping("/collection") // Base URL for all endpoints in this controller
+@CrossOrigin(origins = "http://localhost:4200") // Allows frontend (React) to call backend
 public class CollectionController {
 
-    private final UserRepository userRepo;
-    private final ItemRepository itemRepo;
+    private final CollectionService collectionService;
 
-    public CollectionController(UserRepository userRepo, ItemRepository itemRepo) {
-        this.userRepo = userRepo;
-        this.itemRepo = itemRepo;
+    // Constructor injection of CollectionService
+    public CollectionController(CollectionService collectionService) {
+        this.collectionService = collectionService;
     }
 
-    // GET user's collection (HELPER ONLY)
+    // READ: Get all collection items
+    // Endpoint: GET /collection
     @GetMapping
-    public ResponseEntity<?> getCollection(HttpSession session) {
-        if (!isHelper(session)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Only Helpers can access collections"));
-        }
-
-        Long userId = (Long) session.getAttribute("userId");
-        return userRepo.findById(userId)
-                .map(user -> ResponseEntity.ok(user.getCollection()))
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<List<Collection>> getAllCollections() {
+        return ResponseEntity.ok(collectionService.findAllCollections());
     }
 
-    // POST add item to collection (HELPER ONLY)
-    @PostMapping("/{itemId}")
-    public ResponseEntity<?> addToCollection(@PathVariable Long itemId, HttpSession session) {
-        if (!isHelper(session)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Only Helpers can manage collections"));
+    // READ: Get a specific collection item by ID
+    // Endpoint: GET /collection/{id}
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCollectionById(@PathVariable String id) {
+        Collection collection = collectionService.findCollectionById(id);
+
+        // If item not found, return 404 error
+        if (collection == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Collection item not found"));
         }
 
-        Long userId = (Long) session.getAttribute("userId");
-        
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        Item item = itemRepo.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Item not found"));
-
-        // Check if item already in collection
-        if (user.getCollection().contains(item)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", "Item already in collection"));
-        }
-
-        user.getCollection().add(item);
-        userRepo.save(user);
-
-        return ResponseEntity.ok(Map.of("message", "Item added to collection", "collection", user.getCollection()));
+        return ResponseEntity.ok(collection);
     }
 
-    // DELETE remove item from collection (HELPER ONLY)
-    @DeleteMapping("/{itemId}")
-    public ResponseEntity<?> removeFromCollection(@PathVariable Long itemId, HttpSession session) {
-        if (!isHelper(session)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Only Helpers can manage collections"));
+    // CREATE: Add item to collection
+    // Endpoint: POST /collection/add
+    @PostMapping("/add")
+    public ResponseEntity<?> addCollection(@RequestBody Collection collection) {
+
+        // Basic validation
+        if (collection.getUserId() == null || collection.getUserId().isBlank()
+                || collection.getItemId() == null || collection.getItemId().isBlank()
+                || collection.getQuantity() <= 0) {
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "userId, itemId, and quantity are required"));
         }
 
-        Long userId = (Long) session.getAttribute("userId");
-        
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        Item item = itemRepo.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Item not found"));
+        // Save the new collection item using service
+        Collection saved = collectionService.saveCollection(collection);
 
-        user.getCollection().remove(item);
-        userRepo.save(user);
-
-        return ResponseEntity.ok(Map.of("message", "Item removed from collection", "collection", user.getCollection()));
+        // Return created object with status 201
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // POST commit collection (HELPER ONLY)
-    @PostMapping("/commit")
-    public ResponseEntity<?> commitCollection(HttpSession session) {
-        if (!isHelper(session)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Only Helpers can commit collections"));
+    // UPDATE: Update existing collection item
+    // Endpoint: PUT /collection/{id}/update
+    @PutMapping("/{id}/update")
+    public ResponseEntity<?> updateCollection(@PathVariable String id, @RequestBody Collection collection) {
+
+        Collection updated = collectionService.updateCollection(id, collection);
+
+        // If item not found
+        if (updated == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Collection item not found"));
         }
 
-        Long userId = (Long) session.getAttribute("userId");
-        
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(updated);
+    }
 
-        List<Item> committedItems = List.copyOf(user.getCollection());
-        
-        // Clear the collection
-        user.getCollection().clear();
-        userRepo.save(user);
+    // DELETE: Remove item from collection
+    // Endpoint: DELETE /collection/{id}/delete
+    @DeleteMapping("/{id}/delete")
+    public ResponseEntity<?> deleteCollection(@PathVariable String id) {
 
-        // Here you could add logic to update the catalog based on committed items
-        // For now, we just clear the collection as per requirements
+        boolean deleted = collectionService.deleteCollection(id);
+
+        // If item not found
+        if (!deleted) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Collection item not found"));
+        }
 
         return ResponseEntity.ok(Map.of(
-            "message", "Collection committed successfully",
-            "committedItems", committedItems,
-            "collection", user.getCollection()
+                "success", true,
+                "message", "Collection item deleted successfully"
         ));
     }
 
-    // Helper method for role checking
-    private boolean isHelper(HttpSession session) {
-        User.Role role = (User.Role) session.getAttribute("role");
-        return role == User.Role.HELPER;
+    // RELATIONSHIP: Get all items for a specific user
+    // Endpoint: GET /collection/user/{userId}
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Collection>> getCollectionByUserId(@PathVariable String userId) {
+
+        // This simulates the relationship between User and Collection using userId
+        return ResponseEntity.ok(collectionService.getCollectionByUserId(userId));
     }
 }

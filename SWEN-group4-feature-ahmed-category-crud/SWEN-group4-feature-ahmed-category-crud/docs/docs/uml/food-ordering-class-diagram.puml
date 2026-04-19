@@ -1,0 +1,80 @@
+@startuml
+title Food & Beverage Ordering System - Class Diagram
+
+skinparam classAttributeIconSize 0
+
+enum Role {
+  HELPER
+  OWNER
+}
+
+class User {
+  +id: Long
+  +username: String
+  +email: String
+  +passwordHash: String
+  +role: Role
+  +register()
+  +login()
+  +logout()
+}
+
+class Category {
+  +id: Long
+  +name: String
+  +rename()
+}
+
+class Item {
+  +id: Long
+  +name: String
+  +description: String
+  +price: Decimal
+  +available: boolean
+  +setAvailability()
+  +updateDetails()
+}
+
+class Basket {
+  +id: Long
+  +updatedAt: DateTime
+  +addItem(itemId, qty)
+  +updateQty(basketItemId, qty)
+  +removeItem(basketItemId)
+  +getTotal()
+}
+
+class BasketItem {
+  +id: Long
+  +quantity: int
+  +unitPriceSnapshot: Decimal
+  +lineTotal(): Decimal
+}
+
+class Order {
+  +id: Long
+  +submittedAt: DateTime
+  +totalCost: Decimal
+  +submit()
+}
+
+class OrderItem {
+  +id: Long
+  +quantity: int
+  +unitPriceSnapshot: Decimal
+  +itemNameSnapshot: String
+  +lineTotal(): Decimal
+}
+
+' Relationships + Multiplicity + Role names
+User "1" -- "1" Basket : helperHas >
+Basket "1" *-- "0..*" BasketItem : contains >
+Item "1" -- "0..*" BasketItem : selectedAs >
+
+User "1" -- "0..*" Order : places >
+Order "1" *-- "1..*" OrderItem : includes >
+Item "1" -- "0..*" OrderItem : appearsIn >
+
+Category "1" -- "0..*" Item : groups >
+
+@enduml
