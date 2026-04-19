@@ -27,7 +27,10 @@ export default function Navbar() {
             </>
           )}
           {isLoggedIn && role === 'OWNER' && (
-            <Link to="/admin" className="nav-link">Dashboard</Link>
+            <>
+              <Link to="/admin" className="nav-link">Dashboard</Link>
+              <Link to="/admin/users" className="nav-link">Users</Link>
+            </>
           )}
         </div>
 

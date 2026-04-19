@@ -1,0 +1,23 @@
+# FreshBite monorepo — do not commit build output or dependencies
+
+# Frontend (Vite / React)
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/*.local
+frontend/.env.local
+frontend/.env.*.local
+
+# Backend (Maven / Spring Boot)
+backend/target/
+
+# Logs & temp
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# IDE (optional local overrides)
+.idea/
+*.iml
+.vscode/

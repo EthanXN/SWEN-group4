@@ -20,12 +20,14 @@ public class Item {
 
     private String category;
 
+    // Original constructor
     public Item() {}
 
     public Item(String name) {
         this.name = name;
     }
 
+    // New constructor for ItemService pre-population
     public Item(String name, String description, Double price, String category) {
         this.name = name;
         this.description = description;

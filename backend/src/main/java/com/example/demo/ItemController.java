@@ -1,6 +1,6 @@
 package com.example.demo;
 
-import org.springframework.http.HttpStatus;
+    import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
@@ -9,11 +9,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/items")
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class ItemController {
 
     private final ItemRepository itemRepo;
-    private final ItemService itemService;
+
+    private ItemService itemService;
 
     public ItemController(ItemRepository itemRepo, ItemService itemService) {
         this.itemRepo = itemRepo;
@@ -66,6 +66,7 @@ public class ItemController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Only Owner can update items"));
         }
+
         return itemRepo.findById(id)
                 .map(existingItem -> {
                     existingItem.setName(item.getName());
@@ -79,29 +80,23 @@ public class ItemController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // DELETE item (OWNER ONLY)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteItem(@PathVariable Long id, HttpSession session) {
         if (!isOwner(session)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Only Owner can delete items"));
         }
+
         if (!itemRepo.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+
         itemRepo.deleteById(id);
         return ResponseEntity.ok(Map.of("message", "Item deleted successfully"));
     }
 
-    @GetMapping("/service/search")
-    public ResponseEntity<?> serviceSearchByName(@RequestParam String name) {
-        return ResponseEntity.ok(itemService.searchByName(name));
-    }
-
-    @GetMapping("/service/category")
-    public ResponseEntity<?> serviceSearchByCategory(@RequestParam String category) {
-        return ResponseEntity.ok(itemService.searchByCategory(category));
-    }
-
+    // Helper methods for role checking
     private boolean isLoggedIn(HttpSession session) {
         return session.getAttribute("userId") != null;
     }
@@ -110,4 +105,13 @@ public class ItemController {
         User.Role role = (User.Role) session.getAttribute("role");
         return role == User.Role.OWNER;
     }
+@GetMapping("/service/search")
+public ResponseEntity<?> serviceSearchByName(@RequestParam String name) {
+    return ResponseEntity.ok(itemService.searchByName(name));
+}
+
+@GetMapping("/service/category")
+public ResponseEntity<?> serviceSearchByCategory(@RequestParam String category) {
+    return ResponseEntity.ok(itemService.searchByCategory(category));
+}
 }
