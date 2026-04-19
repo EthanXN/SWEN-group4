@@ -3,7 +3,6 @@ package com.example.demo;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
 
@@ -12,102 +11,69 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class ItemController {
 
-    private final ItemRepository itemRepo;
-    private final ItemService itemService;
+    private final AppService appService;
 
-    public ItemController(ItemRepository itemRepo, ItemService itemService) {
-        this.itemRepo = itemRepo;
-        this.itemService = itemService;
+    public ItemController(AppService appService) {
+        this.appService = appService;
     }
 
+    // GET all items
     @GetMapping
-    public ResponseEntity<?> getAllItems(HttpSession session) {
-        if (!isLoggedIn(session)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Not logged in"));
-        }
-        return ResponseEntity.ok(itemRepo.findAll());
+    public ResponseEntity<List<Item>> getAllItems() {
+        return ResponseEntity.ok(appService.getAllItems());
     }
 
+    // GET item by ID
     @GetMapping("/{id}")
-    public ResponseEntity<?> getItemById(@PathVariable Long id, HttpSession session) {
-        if (!isLoggedIn(session)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Not logged in"));
+    public ResponseEntity<?> getItemById(@PathVariable Long id) {
+        Item item = appService.getItemById(id);
+        if (item == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Item not found"));
         }
-        return itemRepo.findById(id)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(item);
     }
 
+    // GET search by name
     @GetMapping("/search")
-    public ResponseEntity<?> searchItems(@RequestParam String query, HttpSession session) {
-        if (!isLoggedIn(session)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Not logged in"));
-        }
-        List<Item> results = itemRepo.findByNameContainingIgnoreCase(query);
-        return ResponseEntity.ok(results);
+    public ResponseEntity<List<Item>> searchByName(@RequestParam String query) {
+        return ResponseEntity.ok(appService.searchItemsByName(query));
     }
 
-    @PostMapping
-    public ResponseEntity<?> addItem(@RequestBody Item item, HttpSession session) {
-        if (!isOwner(session)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Only Owner can add items"));
-        }
-        Item saved = itemRepo.save(item);
+    // GET filter by category
+    @GetMapping("/category")
+    public ResponseEntity<List<Item>> searchByCategory(@RequestParam String category) {
+        return ResponseEntity.ok(appService.searchItemsByCategory(category));
+    }
+
+    // POST add new item
+    @PostMapping("/add")
+    public ResponseEntity<Item> addItem(@RequestBody Item item) {
+        Item saved = appService.saveItem(item);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateItem(@PathVariable Long id, @RequestBody Item item, HttpSession session) {
-        if (!isOwner(session)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Only Owner can update items"));
+    // PUT update item
+    @PutMapping("/{id}/update")
+    public ResponseEntity<?> updateItem(@PathVariable Long id,
+                                         @RequestBody Item item) {
+        Item updated = appService.updateItem(id, item);
+        if (updated == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Item not found"));
         }
-        return itemRepo.findById(id)
-                .map(existingItem -> {
-                    existingItem.setName(item.getName());
-                    existingItem.setDescription(item.getDescription());
-                    existingItem.setPrice(item.getPrice());
-                    existingItem.setAvailable(item.isAvailable());
-                    existingItem.setCategory(item.getCategory());
-                    Item updated = itemRepo.save(existingItem);
-                    return ResponseEntity.ok(updated);
-                })
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteItem(@PathVariable Long id, HttpSession session) {
-        if (!isOwner(session)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Only Owner can delete items"));
+    // DELETE item
+    @DeleteMapping("/{id}/delete")
+    public ResponseEntity<?> deleteItem(@PathVariable Long id) {
+        boolean deleted = appService.deleteItem(id);
+        if (!deleted) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("success", false, "message", "Item not found"));
         }
-        if (!itemRepo.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        itemRepo.deleteById(id);
-        return ResponseEntity.ok(Map.of("message", "Item deleted successfully"));
-    }
-
-    @GetMapping("/service/search")
-    public ResponseEntity<?> serviceSearchByName(@RequestParam String name) {
-        return ResponseEntity.ok(itemService.searchByName(name));
-    }
-
-    @GetMapping("/service/category")
-    public ResponseEntity<?> serviceSearchByCategory(@RequestParam String category) {
-        return ResponseEntity.ok(itemService.searchByCategory(category));
-    }
-
-    private boolean isLoggedIn(HttpSession session) {
-        return session.getAttribute("userId") != null;
-    }
-
-    private boolean isOwner(HttpSession session) {
-        User.Role role = (User.Role) session.getAttribute("role");
-        return role == User.Role.OWNER;
+        return ResponseEntity.ok(Map.of("success", true,
+                                        "message", "Item deleted successfully"));
     }
 }
