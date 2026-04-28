@@ -43,8 +43,8 @@ public class CategoryController {
 
     // PUT update category
     @PutMapping("/{id}/update")
-    public ResponseEntity<?> updateCategory(@PathVariable String id, 
-                                             @RequestBody Category category) {
+    public ResponseEntity<?> updateCategory(@PathVariable String id,
+                                            @RequestBody Category category) {
         Category updated = appService.updateCategory(id, category);
         if (updated == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -61,11 +61,11 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("success", false, "message", "Category not found"));
         }
-        return ResponseEntity.ok(Map.of("success", true, 
-                                        "message", "Category deleted successfully"));
+        return ResponseEntity.ok(Map.of("success", true,
+                "message", "Category deleted successfully"));
     }
 
-    // GET items by category (relationship)
+    // GET items by category
     @GetMapping("/{id}/items")
     public ResponseEntity<?> getItemsByCategory(@PathVariable String id) {
         return ResponseEntity.ok(appService.getItemsByCategoryId(id));
